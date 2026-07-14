@@ -1,0 +1,47 @@
+default_platform(:android)
+
+platform :android do
+  desc "Run lint"
+  lane :lint do
+    gradle(task: "lint", project_dir: "android")
+  end
+
+  desc "Run unit tests"
+  lane :test do
+    gradle(task: "test", project_dir: "android")
+  end
+
+  desc "Build debug APK (practice - no signing needed)"
+  lane :build_debug do
+    gradle(task: "assembleDebug", project_dir: "android")
+  end
+
+  desc "Build release APK (debug-signed for practice)"
+  lane :build_release do
+    gradle(task: "assembleRelease", project_dir: "android")
+  end
+
+  desc "Deploy to Google Play (requires service account json)"
+  lane :deploy do
+    gradle(task: "clean assembleRelease", project_dir: "android")
+    upload_to_play_store(track: 'beta')
+  end
+end
+
+platform :ios do
+  desc "Build iOS app for simulator (practice - no signing needed)"
+  lane :build do
+    build_app(
+      workspace: "ios/CICD_DEMO.xcworkspace",
+      scheme: "CICD_DEMO",
+      skip_package_ipa: true,
+      destination: "generic/platform=iOS Simulator"
+    )
+  end
+
+  desc "Deploy to TestFlight (requires signing + App Store Connect API key)"
+  lane :beta do
+    build_app(workspace: "ios/CICD_DEMO.xcworkspace", scheme: "CICD_DEMO")
+    upload_to_testflight
+  end
+end
